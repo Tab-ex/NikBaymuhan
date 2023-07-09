@@ -19,6 +19,7 @@
 *.tar.gz
 *.rar
 *.cmd
+*.mv.db
 .mvn/
 mvnw
 
