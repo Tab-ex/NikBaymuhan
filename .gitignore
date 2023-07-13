@@ -19,6 +19,7 @@
 *.tar.gz
 *.rar
 *.cmd
+*.trace.db
 *.mv.db
 .mvn/
 mvnw

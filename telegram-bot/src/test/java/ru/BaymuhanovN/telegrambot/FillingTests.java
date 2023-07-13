@@ -1,16 +1,19 @@
 package ru.BaymuhanovN.telegrambot;
 
+import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.BaymuhanovN.telegrambot.entities.Category;
-import ru.BaymuhanovN.telegrambot.entities.Client;
-import ru.BaymuhanovN.telegrambot.entities.Product;
-import ru.BaymuhanovN.telegrambot.repositories.CategoryRepository;
-import ru.BaymuhanovN.telegrambot.repositories.ClientRepository;
-import ru.BaymuhanovN.telegrambot.repositories.ProductRepository;
+import org.springframework.core.annotation.Order;
+import ru.BaymuhanovN.telegrambot.entities.*;
+import ru.BaymuhanovN.telegrambot.service.*;
+import ru.BaymuhanovN.telegrambot.repositories.*;
+
+import java.util.List;
 
 @SpringBootTest
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class FillingTests {
     @Autowired
     private ClientRepository clientRepository;
@@ -18,24 +21,31 @@ class FillingTests {
     private CategoryRepository categoryRepository;
     @Autowired
     private ProductRepository productRepository;
-
+    @Autowired
+    private ClientOrderRepository clientOrderRepository;
+    @Autowired
+    private OrderProductRepository orderProductRepository;
+    @Autowired
+    private ClientService clientService;
     @Test
+    @Order(1)
     void createTwoClients() {
         Client client1 = new Client();
-        client1.setAddress("address1");
+        client1.setAddress("Puskino");
         client1.setExternalId(1L);
-        client1.setFullName("fullName1");
+        client1.setFullName("Ivanow");
         client1.setPhoneNumber("+79781234567");
         clientRepository.save(client1);
         Client client2 = new Client();
-        client2.setAddress("address1");
-        client2.setExternalId(1L);
-        client2.setFullName("fullName1");
-        client2.setPhoneNumber("+79784534567");
+        client2.setAddress("Petrovska");
+        client2.setExternalId(10L);
+        client2.setFullName("Kulibin");
+        client2.setPhoneNumber("+7934576834");
         clientRepository.save(client2);
     }
 
     @Test
+    @Order(2)
     void createCategory() {
         Category mainCategory = new Category();
         mainCategory.setName("Main Category");
@@ -345,4 +355,34 @@ class FillingTests {
         productRepository.save(milkshake);
     }
 
+    @Test
+    @Order(3)
+    void createClientOrders() {
+        Client client1 = clientService.getClientByExternalId(1L);
+        Client client2 = clientService.getClientByExternalId(2L);
+
+        for (int i = 0; i < 10; i++) {
+            ClientOrder order = new ClientOrder();
+            order.setClient(i % 2 == 0 ? client1 : client2);
+            order.setStatus(0);
+            order.setTotal(100.0 + i);
+            clientOrderRepository.save(order);
+
+        }
+    }
+
+    @Test
+    @Order(3)
+    public void createOrderProducts() {
+        List<Product> products = (List<Product>) productRepository.findAll();
+        List<ClientOrder> orders = (List<ClientOrder>) clientOrderRepository.findAll();
+
+        for (int i = 0; i < 10; i++) {
+            OrderProduct orderProduct = new OrderProduct();
+            orderProduct.setClientOrder(orders.get(i));
+            orderProduct.setProduct(products.get(i % products.size()));
+            orderProduct.setCountProduct((long) (i + 1));
+            orderProductRepository.save(orderProduct);
+        }
+    }
 }
